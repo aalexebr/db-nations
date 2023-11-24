@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -49,8 +51,8 @@ public class Main {
 				    		String continent = rs.getString(4);
 				    		counter ++;
 				    		
-				    		System.out.println("country: "+country+" - "
-				    				+"country id: "+ countryId+ " - "
+				    		System.out.println("country: "+country+" | "
+				    				+"country id: "+ countryId+ " | "
 				    				+"region: "+region+" - "
 				    				+"continent: "+continent);
 				    		
@@ -76,7 +78,7 @@ public class Main {
 		System.out.print("what country do you want to search?");
 		String userQuery = in.nextLine();
 		
-		in.close();
+//		in.close();
 		
 		try (Connection con = DriverManager.getConnection(url, user, pws)){
 			
@@ -116,7 +118,104 @@ public class Main {
 							    		
 							    		
 							    	}
-							    	System.out.println("counter: "+ counter);
+							    	
+
+							    }
+						 }
+							
+			
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		System.out.print("give me an id of the selected country: ");
+		String userId = in.nextLine();
+		int id = Integer.valueOf(userId);
+		
+		in.close();
+		
+		bonus(id);
+	}
+	
+	private static void bonus(int id) {
+		String countrySelected = "";
+		List <String> languages = new ArrayList<>();
+		
+		try (Connection con = DriverManager.getConnection(url, user, pws)){
+			
+			String sqlQuery = " SELECT languages.language, countries.name "
+					+ " FROM countries\r\n"
+					+ " JOIN country_languages "
+					+ " ON country_languages.country_id = countries.country_id "
+					+ " JOIN languages  "
+					+ " ON country_languages.language_id = languages.language_id "
+					+ " WHERE countries.country_id = ?; ";
+			
+				try (PreparedStatement ps = con.prepareStatement(sqlQuery)) {
+				
+						ps.setInt(1, id);
+						
+							    try(ResultSet rs = ps.executeQuery()){
+							    	
+							    	int counter = 0;
+							    	
+							    	
+							    	while(rs.next()) {
+							    		
+							    		String language = rs.getString(1);
+							    		countrySelected = rs.getString(2);
+							    		languages.add(language);
+							    		
+							    		counter ++;
+							    		
+							    	}
+							    	
+
+							    }
+						 }
+							
+			
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		System.out.println("country selected: "+ countrySelected);
+		System.out.println("languages:\n"+languages);
+		
+		try (Connection con = DriverManager.getConnection(url, user, pws)){
+			
+			String sqlQuery = " SELECT country_stats.population, country_stats.gdp, country_stats.year "
+					+ " FROM countries "
+					+ " JOIN country_stats "
+					+ " ON country_stats.country_id = countries.country_id "
+					+ " WHERE countries.country_id = ? "
+					+ " ORDER BY country_stats.year DESC "
+					+ " LIMIT 1;";
+			
+				try (PreparedStatement ps = con.prepareStatement(sqlQuery)) {
+				
+						ps.setInt(1, id);
+						
+							    try(ResultSet rs = ps.executeQuery()){
+							    	
+							    	
+							    	while(rs.next()) {
+							    		
+							    		String population = rs.getString(1);
+							    		int year = rs.getInt(3);
+							    		String gdp = rs.getString(2);
+							    		
+							    		
+							    		System.out.println("Most recent stats: \n"+
+							    				"Year: "+year+"\n"+
+							    				"Population: "+population+"\n"+
+							    				"GDP: "+gdp);
+							    		
+							    		
+							    	}
+							    	
+
 							    }
 						 }
 							
